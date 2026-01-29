@@ -6,3 +6,5 @@ trimesh
 scipy
 rembg
 onnxruntime-gpu
+timm
+einops

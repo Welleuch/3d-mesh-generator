@@ -68,10 +68,15 @@ def handler(job):
     try:
         # 3. Trigger ComfyUI
         response = requests.post(f"{COMFY_URL}/prompt", json={"prompt": workflow})
+        res_json = response.json()
+        
+        # ADD THIS CHECK: If ComfyUI rejects the prompt, stop immediately
+        if "error" in res_json:
+            return {"status": "error", "message": "ComfyUI rejected the workflow", "details": res_json["error"]}
         if response.status_code != 200:
             return {"error": f"ComfyUI Error: {response.text}"}
             
-        prompt_id = response.json().get("prompt_id")
+        prompt_id = res_json.get("prompt_id")
 
         # 4. Wait for the .glb file to appear in output
         found_mesh = None
