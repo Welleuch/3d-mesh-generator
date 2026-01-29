@@ -1,0 +1,6 @@
+runpod:
+    base_path: /runpod-volume/
+    checkpoints: checkpoints/
+    unet: ./
+    vae: ./
+    birefnet: BiRefNet/

@@ -1,0 +1,8 @@
+runpod
+requests
+boto3
+gguf
+trimesh
+scipy
+rembg
+onnxruntime-gpu
