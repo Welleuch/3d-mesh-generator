@@ -10,7 +10,7 @@ from botocore.config import Config
 COMFY_URL = "http://127.0.0.1:8188"
 WORKFLOW_PATH = "/comfyui/workflow_api.json"
 INPUT_DIR = "/comfyui/input"
-OUTPUT_DIR = "/comfyui/output/mesh" # Note the subfolder from your workflow node 12
+OUTPUT_DIR = "/comfyui/output/mesh"
 
 R2_CONF = {
     'endpoint': "https://d165cffd95013bf358b1f0cac3753628.r2.cloudflarestorage.com",
@@ -27,28 +27,40 @@ def upload_to_r2(file_path, file_name):
         aws_secret_access_key=R2_CONF['secret_key'],
         config=Config(signature_version='s3v4')
     )
-    # ExtraArgs for 3D models
     s3.upload_file(file_path, R2_CONF['bucket'], file_name, ExtraArgs={'ContentType': 'model/gltf-binary'})
     return f"{R2_CONF['public_url']}/{file_name}"
 
+def wait_for_server():
+    """Wait for ComfyUI to be ready before accepting jobs."""
+    print("⏳ Checking if ComfyUI is up...")
+    while True:
+        try:
+            # We check object_info to ensure nodes are loaded
+            response = requests.get(f"{COMFY_URL}/object_info")
+            if response.status_code == 200:
+                print("✅ ComfyUI is ready!")
+                break
+        except:
+            pass
+        time.sleep(5)
+
 def handler(job):
     job_input = job['input']
-    image_url = job_input.get("image_url") # The link from your Image Gen result
+    image_url = job_input.get("image_url")
     
     if not image_url:
         return {"error": "No image_url provided"}
 
-    # 1. Download the image to ComfyUI input folder
+    # 1. Download the image
     local_input_image = os.path.join(INPUT_DIR, "input_for_3d.png")
     img_data = requests.get(image_url).content
-    with open(local_input_image, 'wb') as handler:
-        handler.write(img_data)
+    with open(local_input_image, 'wb') as f:
+        f.write(img_data)
 
     # 2. Prepare Workflow
     with open(WORKFLOW_PATH, 'r') as f:
         workflow = json.load(f)
 
-    # Map inputs correctly based on your JSON nodes
     workflow["1"]["inputs"]["image"] = "input_for_3d.png"
     file_prefix = f"mesh_{int(time.time())}"
     workflow["12"]["inputs"]["filename_prefix"] = f"mesh/{file_prefix}"
@@ -56,10 +68,15 @@ def handler(job):
     try:
         # 3. Trigger ComfyUI
         response = requests.post(f"{COMFY_URL}/prompt", json={"prompt": workflow})
-        
-        # 4. Poll for the .glb file
+        if response.status_code != 200:
+            return {"error": f"ComfyUI Error: {response.text}"}
+            
+        prompt_id = response.json().get("prompt_id")
+
+        # 4. Wait for the .glb file to appear in output
         found_mesh = None
-        for _ in range(300): # 3D generation is slow, 5 min timeout
+        # Increased timeout to 10 minutes (120 * 5s)
+        for _ in range(120): 
             if os.path.exists(OUTPUT_DIR):
                 files = [f for f in os.listdir(OUTPUT_DIR) if f.startswith(file_prefix) and f.endswith(".glb")]
                 if files:
@@ -68,7 +85,7 @@ def handler(job):
             time.sleep(5)
 
         if not found_mesh:
-            return {"error": "3D Generation timed out."}
+            return {"error": "3D Generation timed out or file not found."}
 
         # 5. Upload to R2
         r2_url = upload_to_r2(found_mesh, f"{file_prefix}.glb")
@@ -78,4 +95,6 @@ def handler(job):
     except Exception as e:
         return {"error": str(e)}
 
-runpod.serverless.start({"handler": handler})
+if __name__ == "__main__":
+    wait_for_server()
+    runpod.serverless.start({"handler": handler})
