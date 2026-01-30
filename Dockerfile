@@ -11,6 +11,7 @@ RUN pip install --upgrade pip && pip install -r /requirements.txt
 
 # 2. CRITICAL: Install to ComfyUI's internal virtual environment
 RUN /opt/venv/bin/python -m pip install timm einops
+RUN /opt/venv/bin/python -m pip install timm einops opencv-python-headless
 
 ENV COMFYUI_PATH_CONFIG=/comfyui/extra_model_paths.yaml
 

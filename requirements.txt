@@ -8,3 +8,4 @@ rembg
 onnxruntime-gpu
 timm
 einops
+opencv-python-headless
