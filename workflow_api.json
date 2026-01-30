@@ -146,19 +146,12 @@
     }
   },
   "13": {
-    "inputs": {
-      "model": "BiRefNet-general",
-      "mask_blur": 0,
-      "mask_offset": 0,
-      "invert_output": false,
-      "refine_foreground": false,
-      "background": "Alpha",
-      "background_color": "#222222",
-      "image": [
-        "1",
-        0
-      ]
-    },
+  "inputs": {
+    "rmbgmodel": "rmbg-1.4.pth",
+    "image": ["ID_OF_YOUR_LOAD_IMAGE_NODE", 0]
+  },
+  "class_type": "RMBG"
+  },
     "class_type": "BiRefNetRMBG",
     "_meta": {
       "title": "BiRefNet Remove Background (RMBG)"
