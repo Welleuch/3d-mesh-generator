@@ -16,7 +16,8 @@ COPY requirements.txt /requirements.txt
 
 # 3. Install Python dependencies
 RUN pip install --upgrade pip && pip install -r /requirements.txt
-RUN /opt/venv/bin/python -m pip install timm einops opencv-python-headless
+RUN /opt/venv/bin/python -m pip install timm einops opencv-python-headless scikit-image pyyaml dill
+
 
 ENV COMFYUI_PATH_CONFIG=/comfyui/extra_model_paths.yaml
 
