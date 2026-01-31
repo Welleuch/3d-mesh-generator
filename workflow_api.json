@@ -151,9 +151,10 @@
         "1",
         0
       ],
-      "model": "RMBG-2.0",
+      "model": "rmbg-1.4.pth",
       "sensitivity": 0.5,
-      "process_res": 1024
+      "process_res": 1024,
+      "mask_blur": 0
     },
     "class_type": "RMBG"
   }
