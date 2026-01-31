@@ -146,15 +146,13 @@
     }
   },
   "13": {
-  "inputs": {
-    "rmbgmodel": "rmbg-1.4.pth",
-    "image": ["ID_OF_YOUR_LOAD_IMAGE_NODE", 0]
-  },
-  "class_type": "RMBG"
-  },
-    "class_type": "BiRefNetRMBG",
-    "_meta": {
-      "title": "BiRefNet Remove Background (RMBG)"
-    }
+    "inputs": {
+      "rmbgmodel": "rmbg-1.4.pth",
+      "image": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "RMBG"
   }
 }
