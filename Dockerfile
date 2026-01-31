@@ -7,17 +7,22 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Copy files (Ensure these exist in your GitHub repo!)
+# 2. Copy files
 COPY extra_model_paths.yaml /comfyui/extra_model_paths.yaml
 COPY workflow_api.json /comfyui/workflow_api.json
 COPY handler.py /handler.py
 COPY requirements.txt /requirements.txt
 
-# 3. Install Python dependencies into the ComfyUI venv
-RUN pip install --upgrade pip
-RUN /opt/venv/bin/python -m pip install onnxruntime-gpu opencv-python-headless gguf timm hydra-core iopath segment-anything-fast
+# 3. Install Python dependencies + decord (required by AILab)
+RUN /opt/venv/bin/python -m pip install --upgrade pip
+RUN /opt/venv/bin/python -m pip install onnxruntime-gpu opencv-python-headless gguf timm hydra-core iopath segment-anything-fast decord
+
+# Fix the BiRefNet import conflict (prevents the "utils" error)
+RUN if [ -f /comfyui/custom_nodes/ComfyUI-BiRefNet-ZHO/dataset.py ]; then \
+    sed -i 's/from utils import/from .utils import/g' /comfyui/custom_nodes/ComfyUI-BiRefNet-ZHO/dataset.py; \
+    fi
 
 ENV COMFYUI_PATH_CONFIG=/comfyui/extra_model_paths.yaml
 
-# 4. Use JSON format for CMD for better stability
+# 4. Use JSON format for CMD
 CMD ["sh", "-c", "mkdir -p /comfyui/output/mesh && ln -snf /runpod-volume/custom_nodes/* /comfyui/custom_nodes/ && python /comfyui/main.py --listen 127.0.0.1 --port 8188 & python -u /handler.py"]
