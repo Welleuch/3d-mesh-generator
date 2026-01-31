@@ -14,8 +14,17 @@ COPY handler.py /handler.py
 COPY requirements.txt /requirements.txt
 
 # 3. Install Python dependencies 
-RUN /opt/venv/bin/python -m pip install --upgrade pip
-RUN /opt/venv/bin/python -m pip install onnxruntime-gpu opencv-python-headless gguf timm hydra-core iopath segment-anything-fast decord pycocotools
+RUN /opt/venv/bin/python -m pip install --upgrade pip wheel setuptools
+RUN /opt/venv/bin/python -m pip install --no-cache-dir \
+    onnxruntime-gpu \
+    opencv-python-headless \
+    gguf \
+    timm \
+    hydra-core \
+    iopath \
+    segment-anything-fast \
+    decord \
+    pycocotools
 
 ENV COMFYUI_PATH_CONFIG=/comfyui/extra_model_paths.yaml
 
