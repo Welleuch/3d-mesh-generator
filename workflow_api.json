@@ -151,7 +151,7 @@
         "1",
         0
       ],
-      "model": "rmbg-1.4.pth",
+      "model": "RMBG-2.0",
       "sensitivity": 0.5,
       "process_res": 1024
     },

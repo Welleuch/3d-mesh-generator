@@ -13,16 +13,12 @@ COPY workflow_api.json /comfyui/workflow_api.json
 COPY handler.py /handler.py
 COPY requirements.txt /requirements.txt
 
-# 3. Install Python dependencies + decord (required by AILab)
+# 3. Install Python dependencies 
 RUN /opt/venv/bin/python -m pip install --upgrade pip
-RUN /opt/venv/bin/python -m pip install onnxruntime-gpu opencv-python-headless gguf timm hydra-core iopath segment-anything-fast decord
-
-# Fix the BiRefNet import conflict (prevents the "utils" error)
-RUN if [ -f /comfyui/custom_nodes/ComfyUI-BiRefNet-ZHO/dataset.py ]; then \
-    sed -i 's/from utils import/from .utils import/g' /comfyui/custom_nodes/ComfyUI-BiRefNet-ZHO/dataset.py; \
-    fi
+RUN /opt/venv/bin/python -m pip install onnxruntime-gpu opencv-python-headless gguf timm hydra-core iopath segment-anything-fast decord pycocotools
 
 ENV COMFYUI_PATH_CONFIG=/comfyui/extra_model_paths.yaml
 
 # 4. Use JSON format for CMD
+# This links your S3/Network Volume folders into ComfyUI at runtime
 CMD ["sh", "-c", "mkdir -p /comfyui/output/mesh && ln -snf /runpod-volume/custom_nodes/* /comfyui/custom_nodes/ && python /comfyui/main.py --listen 127.0.0.1 --port 8188 & python -u /handler.py"]
