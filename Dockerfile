@@ -15,7 +15,7 @@ COPY requirements.txt /requirements.txt
 
 # 3. Install Python dependencies into the ComfyUI venv
 RUN pip install --upgrade pip
-RUN /opt/venv/bin/python -m pip install onnxruntime-gpu opencv-python-headless
+RUN /opt/venv/bin/python -m pip install onnxruntime-gpu opencv-python-headless gguf timm hydra-core iopath segment-anything-fast
 
 ENV COMFYUI_PATH_CONFIG=/comfyui/extra_model_paths.yaml
 

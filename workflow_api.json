@@ -147,12 +147,13 @@
   },
   "13": {
     "inputs": {
-      "rmbgmodel": "rmbg-1.4.pth",
       "image": [
         "1",
         0
-      ]
+      ],
+      "model": "rmbg-1.4.pth",
+      "sensitivity": 0.5,
+      "process_res": 1024
     },
     "class_type": "RMBG"
   }
-}
