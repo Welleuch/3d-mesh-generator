@@ -1,161 +1,81 @@
 {
   "1": {
-    "inputs": {
-      "image": "beautifulDesignDragonParis (1).png"
-    },
     "class_type": "LoadImage",
-    "_meta": {
-      "title": "Load Image"
+    "inputs": {
+      "image": "example.png"
     }
   },
   "3": {
-    "inputs": {
-      "ckpt_name": "hunyuan_3d_v2.1.safetensors"
-    },
     "class_type": "ImageOnlyCheckpointLoader",
-    "_meta": {
-      "title": "Image Only Checkpoint Loader (img2vid model)"
+    "inputs": {
+      "ckpt_name": "hunyuan3d-dit-v2_fp16.safetensors"
     }
   },
   "4": {
-    "inputs": {
-      "crop": "center",
-      "clip_vision": [
-        "3",
-        1
-      ],
-      "image": [
-        "13",
-        0
-      ]
-    },
     "class_type": "CLIPVisionEncode",
-    "_meta": {
-      "title": "CLIP Vision Encode"
+    "inputs": {
+      "crop": "none",
+      "clip_vision": ["3", 1],
+      "image": ["1", 0]
     }
   },
   "5": {
+    "class_type": "Hunyuan3Dv2Conditioning",
     "inputs": {
-      "algorithm": "surface net",
-      "threshold": 0.5,
-      "voxel": [
-        "11",
-        0
-      ]
-    },
-    "class_type": "VoxelToMesh",
-    "_meta": {
-      "title": "VoxelToMesh"
+      "clip_vision_output": ["4", 0]
+    }
+  },
+  "6": {
+    "class_type": "ModelSamplingAuraFlow",
+    "inputs": {
+      "shift": 1.0,
+      "model": ["3", 0]
     }
   },
   "7": {
+    "class_type": "EmptyLatentHunyuan3Dv2",
     "inputs": {
-      "clip_vision_output": [
-        "4",
-        0
-      ]
-    },
-    "class_type": "Hunyuan3Dv2Conditioning",
-    "_meta": {
-      "title": "Hunyuan3Dv2Conditioning"
+      "resolution": 3072,
+      "batch_size": 1
     }
   },
   "8": {
+    "class_type": "KSampler",
     "inputs": {
-      "shift": 1.73,
-      "model": [
-        "3",
-        0
-      ]
-    },
-    "class_type": "ModelSamplingAuraFlow",
-    "_meta": {
-      "title": "ModelSamplingAuraFlow"
+      "seed": 42,
+      "steps": 20,
+      "cfg": 10.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": ["6", 0],
+      "positive": ["5", 0],
+      "negative": ["5", 1],
+      "latent_image": ["7", 0]
     }
   },
   "9": {
+    "class_type": "VAEDecodeHunyuan3D",
     "inputs": {
-      "resolution": 4096,
-      "batch_size": 1
-    },
-    "class_type": "EmptyLatentHunyuan3Dv2",
-    "_meta": {
-      "title": "EmptyLatentHunyuan3Dv2"
+      "num_chunks": 8000,
+      "octree_resolution": 256,
+      "samples": ["8", 0],
+      "vae": ["3", 2]
     }
   },
   "10": {
+    "class_type": "VoxelToMesh",
     "inputs": {
-      "seed": 1072403935171944,
-      "steps": 40,
-      "cfg": 6,
-      "sampler_name": "euler",
-      "scheduler": "simple",
-      "denoise": 1,
-      "model": [
-        "3",
-        0
-      ],
-      "positive": [
-        "7",
-        0
-      ],
-      "negative": [
-        "7",
-        1
-      ],
-      "latent_image": [
-        "9",
-        0
-      ]
-    },
-    "class_type": "KSampler",
-    "_meta": {
-      "title": "KSampler"
+      "algorithm": "surface net",
+      "threshold": 0.6,
+      "voxel": ["9", 0]
     }
   },
   "11": {
-    "inputs": {
-      "num_chunks": 8000,
-      "octree_resolution": 512,
-      "samples": [
-        "10",
-        0
-      ],
-      "vae": [
-        "3",
-        2
-      ]
-    },
-    "class_type": "VAEDecodeHunyuan3D",
-    "_meta": {
-      "title": "VAEDecodeHunyuan3D"
-    }
-  },
-  "12": {
+    "class_type": "SaveGLB",
     "inputs": {
       "filename_prefix": "mesh/ComfyUI",
-      "image": "",
-      "mesh": [
-        "5",
-        0
-      ]
-    },
-    "class_type": "SaveGLB",
-    "_meta": {
-      "title": "SaveGLB"
+      "mesh": ["10", 0]
     }
-  },
-  "13": {
-    "inputs": {
-      "image": [
-        "1",
-        0
-      ],
-      "model": "rmbg-1.4.pth",
-      "sensitivity": 0.5,
-      "process_res": 1024,
-      "mask_blur": 0
-    },
-    "class_type": "RMBG"
   }
 }
