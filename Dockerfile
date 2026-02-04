@@ -10,8 +10,20 @@ RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 git wget && rm -rf 
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
+# Install additional Python packages for background removal
+RUN pip install --no-cache-dir rembg[gpu] onnxruntime-gpu
+
 # Setup directories
 RUN mkdir -p /comfyui/input /export
+
+# Install custom nodes
+RUN cd /comfyui/custom_nodes && \
+    # Hunyuan3D nodes
+    git clone https://github.com/Tencent/Hunyuan3D-ComfyUI-Nodes.git || echo "Hunyuan3D nodes exist" && \
+    # Background removal nodes
+    git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git || echo "Impact Pack exists" && \
+    cd ComfyUI-Impact-Pack && git submodule update --init --recursive && cd .. && \
+    git clone https://github.com/cubiq/ComfyUI_essentials.git || echo "Essentials exists"
 
 # Copy workflow and handler
 COPY workflow_api.json /workflow_api.json
@@ -21,28 +33,21 @@ COPY extra_model_paths.yaml /comfyui/extra_model_paths.yaml
 # Create symlink structure
 RUN mkdir -p /comfyui/models/checkpoints
 
-# Install Hunyuan3D custom nodes
-RUN cd /comfyui/custom_nodes && \
-    git clone https://github.com/Tencent/Hunyuan3D-ComfyUI-Nodes.git || echo "Hunyuan3D nodes already exist or failed to clone"
-
-# Start both services - FIXED VERSION
+# Start services
 CMD ["sh", "-c", "\
-  # Wait a moment for volume mount
+  # Wait for volume mount
   echo 'Waiting for volume mount...'; \
   sleep 5; \
   \
-  # Create checkpoint directory if it doesn't exist
+  # Create checkpoint directory
   mkdir -p /runpod-volume/checkpoints/; \
   \
   # Check if model exists
   if [ -f /runpod-volume/checkpoints/hunyuan3d-dit-v2_fp16.safetensors ]; then \
     echo 'Found Hunyuan3D model, creating symlink...'; \
-    ls -lh /runpod-volume/checkpoints/hunyuan3d-dit-v2_fp16.safetensors; \
     ln -sf /runpod-volume/checkpoints/hunyuan3d-dit-v2_fp16.safetensors /comfyui/models/checkpoints/hunyuan3d-dit-v2_fp16.safetensors; \
   else \
     echo 'ERROR: Model not found at /runpod-volume/checkpoints/hunyuan3d-dit-v2_fp16.safetensors'; \
-    echo 'Files in /runpod-volume/checkpoints/:'; \
-    ls -la /runpod-volume/checkpoints/ 2>/dev/null || echo 'Directory does not exist'; \
     exit 1; \
   fi; \
   \
@@ -55,7 +60,7 @@ CMD ["sh", "-c", "\
   \
   # Wait for ComfyUI to start
   echo 'Waiting for ComfyUI to start...'; \
-  sleep 15; \
+  sleep 10; \
   \
   # Start handler
   echo 'Starting handler...'; \

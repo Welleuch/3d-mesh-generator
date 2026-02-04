@@ -1,7 +1,7 @@
 runpod
 requests
 boto3
-trimesh
-scipy
+rembg[gpu]
 onnxruntime-gpu
 Pillow
+numpy
