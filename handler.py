@@ -97,16 +97,13 @@ def handler(job):
             
             # Check all nodes for 3D output
             for node_id, node_output in outputs.items():
+                # CHANGE: Look for "3d" key as verified in your logs
                 if "3d" in node_output and node_output["3d"]:
                     mesh_info = node_output["3d"][0]
                     mesh_name = mesh_info["filename"]
-                    subfolder = mesh_info.get("subfolder", "")
                     
-                    # Construct full path
-                    if subfolder:
-                        source_path = f"/comfyui/output/{subfolder}/{mesh_name}"
-                    else:
-                        source_path = f"/comfyui/output/{mesh_name}"
+                    # Construct full path for Linux RunPod environment
+                    source_path = f"/comfyui/output/{mesh_name}"
                     
                     print(f"Found mesh: {source_path}")
                     
