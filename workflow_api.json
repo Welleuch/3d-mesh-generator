@@ -133,7 +133,7 @@
   },
   "82": {
     "inputs": {
-      "filename_prefix": "mesh/ComfyUI",
+      "filename_prefix": "3d_mesh",
       "image": "",
       "mesh": [
         "81",
